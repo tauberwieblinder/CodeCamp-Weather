@@ -1,9 +1,7 @@
 package de.uniks.codecamp.group_a.weather.model
 
-import java.time.LocalDateTime
-
 data class WeatherData(
-    val time: LocalDateTime,
+    val time: String,
     val temperature: Double,
     val location: String, // e.g. "Kassel"
     val description: String, // e.g. "Partly Cloudy"
