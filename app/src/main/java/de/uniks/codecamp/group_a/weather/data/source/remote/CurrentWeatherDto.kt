@@ -23,7 +23,7 @@ class CurrentWeatherDto(
             temperature_max = weatherInformation.temp_max,
             temperature_min = weatherInformation.temp_min,
             humidity = weatherInformation.humidity.toInt(),
-            wind_speed = wind.speed.toDouble()
+            wind_speed = wind.speed
         )
     }
 }
@@ -45,6 +45,6 @@ data class WeatherDescription(
 )
 
 data class Wind(
-    val speed: Int,
-    val deg: Int
+    val speed: Double,
+    val deg: Double
 )
