@@ -15,11 +15,13 @@ class WeatherDto(
     private val weatherInformation: WeatherInformation,
     private val wind: Wind,
     private val dt: Long,
-    private val name: String
+    private val name: String?
 ) {
+    private fun getDateString(time: Long, simpleDateFormat: SimpleDateFormat) : String = simpleDateFormat.format(time * 1000L)
+
     fun convertToWeatherData(): WeatherData {
         return WeatherData(
-            time = SimpleDateFormat("dd/M/yyyy hh:mm:ss", Locale.getDefault()).format(dt),
+            time = getDateString(dt, SimpleDateFormat("dd MMMM yyyy, HH:mm:ss", Locale.getDefault())),
             temperature = weatherInformation.temp,
             location = name,
             description = weatherDescription[0].description,
