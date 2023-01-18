@@ -18,8 +18,24 @@ class WeatherRepositoryImpl @Inject constructor(
                 data = apiService.getCurrentWeather(
                     latitude = latitude.toString(),
                     longitude = longitude.toString()
-                )
-                    .convertToWeatherData()
+                ).convertToWeatherData()
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Response.Error(e.message ?:"An unknown error occurred while fetching weather information")
+        }
+    }
+
+    override suspend fun getForecast(
+        latitude: Double,
+        longitude: Double
+    ): Response<List<WeatherData>> {
+        return try {
+            Response.Success(
+                data = apiService.getForecast(
+                    latitude = latitude.toString(),
+                    longitude = longitude.toString()
+                ).convertToWeatherDataList()
             )
         } catch (e: Exception) {
             e.printStackTrace()

@@ -18,34 +18,69 @@ class WeatherViewModel @Inject constructor(
     private val locationTrackerInterface: LocationTrackerInterface
 ): ViewModel()
 {
-    var state by mutableStateOf(WeatherState())
+    var currentWeatherState by mutableStateOf(WeatherState())
         private set
 
-    fun loadCurrentWeatherData() {
+    var forecastState by mutableStateOf(ForecastState())
+        private set
+
+    fun loadCurrentWeather() {
         viewModelScope.launch {
-            state = state.copy(
+            currentWeatherState = currentWeatherState.copy(
                 isLoading = true,
                 error = null
             )
             locationTrackerInterface.getLocation()?.let { location ->
                 when(val result = repository.getCurrentWeather(location.latitude, location.longitude)) {
                     is Response.Success -> {
-                        state = state.copy(
-                            weatherData = result.data,
+                        currentWeatherState = currentWeatherState.copy(
+                            data = result.data,
                             isLoading = false,
                             error = null
                         )
                     }
                     is Response.Error -> {
-                        state = state.copy(
-                            weatherData = null,
+                        currentWeatherState = currentWeatherState.copy(
+                            data = null,
                             isLoading = false,
                             error = result.message
                         )
                     }
                 }
             } ?: kotlin.run {
-                state = state.copy(
+                currentWeatherState = currentWeatherState.copy(
+                    isLoading = false,
+                    error = "Couldn't retrieve location"
+                )
+            }
+        }
+    }
+
+    fun loadForecast() {
+        viewModelScope.launch {
+            forecastState = forecastState.copy(
+                isLoading = true,
+                error = null
+            )
+            locationTrackerInterface.getLocation()?.let { location ->
+                when(val result = repository.getForecast(location.latitude, location.longitude)) {
+                    is Response.Success -> {
+                        forecastState = forecastState.copy(
+                            data = result.data,
+                            isLoading = false,
+                            error = null
+                        )
+                    }
+                    is Response.Error -> {
+                        forecastState = forecastState.copy(
+                            data = null,
+                            isLoading = false,
+                            error = result.message
+                        )
+                    }
+                }
+            } ?: kotlin.run {
+                forecastState = forecastState.copy(
                     isLoading = false,
                     error = "Couldn't retrieve location"
                 )

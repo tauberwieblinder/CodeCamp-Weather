@@ -1,22 +1,27 @@
 package de.uniks.codecamp.group_a.weather.data.source.remote
 
 import com.google.gson.annotations.SerializedName
+import de.uniks.codecamp.group_a.weather.data.source.remote.parsing.WeatherDescription
+import de.uniks.codecamp.group_a.weather.data.source.remote.parsing.WeatherInformation
+import de.uniks.codecamp.group_a.weather.data.source.remote.parsing.Wind
 import de.uniks.codecamp.group_a.weather.model.WeatherData
 import java.text.SimpleDateFormat
 import java.util.*
 
-class CurrentWeatherDto(
+class WeatherDto(
     @SerializedName("weather")
     private val weatherDescription: List<WeatherDescription>,
     @SerializedName("main")
     private val weatherInformation: WeatherInformation,
     private val wind: Wind,
     private val dt: Long,
-    private val name: String
+    private val name: String?
 ) {
+    private fun getDateString(time: Long, simpleDateFormat: SimpleDateFormat) : String = simpleDateFormat.format(time * 1000L)
+
     fun convertToWeatherData(): WeatherData {
         return WeatherData(
-            time = SimpleDateFormat("dd/M/yyyy hh:mm:ss", Locale.getDefault()).format(dt),
+            time = getDateString(dt, SimpleDateFormat("dd MMMM yyyy, HH:mm:ss", Locale.getDefault())),
             temperature = weatherInformation.temp,
             location = name,
             description = weatherDescription[0].description,
@@ -28,23 +33,3 @@ class CurrentWeatherDto(
     }
 }
 
-data class WeatherInformation(
-    val temp: Double,
-    val feels_like: Double,
-    val temp_min: Double,
-    val temp_max: Double,
-    val pressure: Double,
-    val humidity: Double
-)
-
-data class WeatherDescription(
-    val id: Int,
-    val main: String,
-    val description: String,
-    val icon: String
-)
-
-data class Wind(
-    val speed: Double,
-    val deg: Double
-)
