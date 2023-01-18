@@ -24,7 +24,7 @@ class WeatherViewModel @Inject constructor(
     var forecastState by mutableStateOf(ForecastState())
         private set
 
-    fun loadCurrentWeatherData() {
+    fun loadCurrentWeather() {
         viewModelScope.launch {
             currentWeatherState = currentWeatherState.copy(
                 isLoading = true,
@@ -34,14 +34,14 @@ class WeatherViewModel @Inject constructor(
                 when(val result = repository.getCurrentWeather(location.latitude, location.longitude)) {
                     is Response.Success -> {
                         currentWeatherState = currentWeatherState.copy(
-                            weatherData = result.data,
+                            data = result.data,
                             isLoading = false,
                             error = null
                         )
                     }
                     is Response.Error -> {
                         currentWeatherState = currentWeatherState.copy(
-                            weatherData = null,
+                            data = null,
                             isLoading = false,
                             error = result.message
                         )
@@ -66,14 +66,14 @@ class WeatherViewModel @Inject constructor(
                 when(val result = repository.getForecast(location.latitude, location.longitude)) {
                     is Response.Success -> {
                         forecastState = forecastState.copy(
-                            weatherDataList = result.data,
+                            data = result.data,
                             isLoading = false,
                             error = null
                         )
                     }
                     is Response.Error -> {
                         forecastState = forecastState.copy(
-                            weatherDataList = null,
+                            data = null,
                             isLoading = false,
                             error = result.message
                         )
