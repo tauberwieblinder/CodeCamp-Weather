@@ -9,7 +9,7 @@ import android.hardware.SensorManager
 abstract class EnvironmentSensor(
     private val context: Context,
     private val sensorFeature: String,
-    private val sensorType: Int
+    val sensorType: Int
 ): SensorEventListener {
 
     private var onValueChange: ((Float) -> Unit)? = null

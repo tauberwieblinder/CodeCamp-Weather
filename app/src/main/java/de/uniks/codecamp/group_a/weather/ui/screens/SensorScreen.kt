@@ -1,7 +1,7 @@
 package de.uniks.codecamp.group_a.weather.ui.screens
 
+import android.hardware.Sensor
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -9,8 +9,6 @@ import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -63,99 +61,39 @@ fun SensorEntry(sensor: EnvironmentSensor, value: Float) {
         return
     }
 
+    var caption = ""
     var unit = ""
+    var resId = R.drawable.sonne_leer
     when {
-        sensor.toString().equals("Brightness/Illuminance") -> unit = "lux"
-        sensor.toString().equals("Ambient Temperature") -> unit = "°C"
-        sensor.toString().equals("Relative Air Humidity") -> unit = "%"
-        sensor.toString().equals("Air Pressure") -> unit = "hPa"
+        sensor.sensorType == Sensor.TYPE_LIGHT -> {
+            caption = sensor.toString()
+            unit = "lux"
+            resId = getLightIcon(value = value)
+        }
+        sensor.sensorType == Sensor.TYPE_AMBIENT_TEMPERATURE -> {
+            caption = sensor.toString()
+            unit = "°C"
+            resId = getTemperatureIcon(value = value)
+        }
+        sensor.sensorType == Sensor.TYPE_RELATIVE_HUMIDITY -> {
+            caption = sensor.toString()
+            unit = "%"
+            resId = getRelHumidityIcon(value = value)
+        }
+        sensor.sensorType == Sensor.TYPE_PRESSURE -> {
+            caption = sensor.toString()
+            unit = "hPa"
+            resId = getPressureIcon(value = value)
+        }
     }
 
-    Text(text = sensor.toString(), fontSize = 35.sp, textAlign = TextAlign.Start)
+    Text(text = caption, fontSize = 35.sp, textAlign = TextAlign.Start)
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.End,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(text = "$value $unit", fontSize = 25.sp)
-        when {
-            sensor.toString().equals("Brightness/Illuminance") -> PaintIconLight(value = value)
-            sensor.toString().equals("Ambient Temperature") -> PaintIconTemp(value = value)
-            sensor.toString().equals("Relative Air Humidity") -> PaintIconRelHumidity(value = value)
-            sensor.toString().equals("Air Pressure") -> PaintIconPressure(value = value)
-        }
-
+        Image(painter = painterResource(id = resId), contentDescription = null, modifier = Modifier.size(50.dp))
     }
-}
-
-@Composable
-fun PaintIconLight(value: Float) {
-    val min = 0
-    val max = 40000
-    val step = abs(max - min) / 4
-
-    var painter: Painter = painterResource(id = R.drawable.sonne)
-
-    when {
-        value < (min + step) -> painter = painterResource(id = R.drawable.sonne_leer)
-        ((value >= (min + step)) && (value < (min + step * 2))) -> painter = painterResource(id = R.drawable.sonne_1_)
-        ((value >= (min + step * 2)) && (value < (min + step * 3))) -> painter = painterResource(id = R.drawable.sonne_2_)
-        value >= (min + step * 3) -> painter = painterResource(id = R.drawable.sonne)
-    }
-
-    Image(painter = painter, contentDescription = null, Modifier.size(50.dp))
-}
-
-@Composable
-fun PaintIconTemp(value: Float) {
-    val min = -273
-    val max = 100
-    val step = abs(max - min) / 4
-
-    var painter: Painter = painterResource(id = R.drawable.celsius)
-
-    when {
-        value < (min + step) -> painter = painterResource(id = R.drawable.celsius)
-        ((value >= (min + step)) && (value < (min + step * 2))) -> painter = painterResource(id = R.drawable.celsius1)
-        ((value >= (min + step * 2)) && (value < (min + step * 3))) -> painter = painterResource(id = R.drawable.celsius2)
-        value >= (min + step * 3) -> painter = painterResource(id = R.drawable.celsius3)
-    }
-
-    Image(painter = painter, contentDescription = null, Modifier.size(50.dp))
-}
-
-@Composable
-fun PaintIconRelHumidity(value: Float) {
-    val min = 0
-    val max = 100
-    val step = abs(max - min) / 4
-
-    var painter: Painter = painterResource(id = R.drawable.water)
-
-    when {
-        value < (min + step) -> painter = painterResource(id = R.drawable.water)
-        ((value >= (min + step)) && (value < (min + step * 2))) -> painter = painterResource(id = R.drawable.water1)
-        ((value >= (min + step * 2)) && (value < (min + step * 3))) -> painter = painterResource(id = R.drawable.water2)
-        value >= (min + step * 3) -> painter = painterResource(id = R.drawable.water3)
-    }
-
-    Image(painter = painter, contentDescription = null, Modifier.size(50.dp))
-}
-
-@Composable
-fun PaintIconPressure(value: Float) {
-    val min = 0
-    val max = 1100
-    val step = abs(max - min) / 4
-
-    var painter: Painter = painterResource(id = R.drawable.barometer)
-
-    when {
-        value < (min + step) -> painter = painterResource(id = R.drawable.barometer)
-        ((value >= (min + step)) && (value < (min + step * 2))) -> painter = painterResource(id = R.drawable.barometer1)
-        ((value >= (min + step * 2)) && (value < (min + step * 3))) -> painter = painterResource(id = R.drawable.barometer2)
-        value >= (min + step * 3) -> painter = painterResource(id = R.drawable.barometer3)
-    }
-
-    Image(painter = painter, contentDescription = null, Modifier.size(50.dp))
 }
