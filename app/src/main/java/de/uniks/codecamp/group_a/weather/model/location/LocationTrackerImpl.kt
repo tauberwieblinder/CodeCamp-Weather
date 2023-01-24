@@ -1,4 +1,4 @@
-package de.uniks.codecamp.group_a.weather.data.location
+package de.uniks.codecamp.group_a.weather.model.location
 
 import android.Manifest
 import android.app.Application

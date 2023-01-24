@@ -30,10 +30,14 @@ class MainActivity : ComponentActivity() {
         locationPermissionRequest = registerForActivityResult(
             ActivityResultContracts.RequestPermission()
         ) {
-            viewModel.loadCurrentWeatherData()
+            viewModel.loadCurrentWeather()
         }
         locationPermissionRequest.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
-
+        if (viewModel.currentWeatherState.data != null) {
+            val data = viewModel.currentWeatherState.data
+        } else {
+            // Etwas ist beim Laden schiefgelaufen
+        }
         setContent {
             WeatherTheme {
                 // A surface container using the 'background' color from the theme
@@ -50,7 +54,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun Greeting(name: String) {
-    Text(text = "Hello $name!")
+    Text(text = "Hello")
+
 }
 
 @Preview(showBackground = true)

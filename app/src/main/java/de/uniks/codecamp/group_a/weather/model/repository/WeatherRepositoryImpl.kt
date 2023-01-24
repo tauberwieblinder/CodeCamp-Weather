@@ -1,6 +1,6 @@
-package de.uniks.codecamp.group_a.weather.data.repository
+package de.uniks.codecamp.group_a.weather.model.repository
 
-import de.uniks.codecamp.group_a.weather.data.source.remote.ApiService
+import de.uniks.codecamp.group_a.weather.model.source.remote.ApiService
 import de.uniks.codecamp.group_a.weather.domain.repository.Response
 import de.uniks.codecamp.group_a.weather.domain.repository.WeatherRepositoryInterface
 import de.uniks.codecamp.group_a.weather.model.WeatherData

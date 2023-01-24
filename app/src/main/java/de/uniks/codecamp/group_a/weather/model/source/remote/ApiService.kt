@@ -1,4 +1,4 @@
-package de.uniks.codecamp.group_a.weather.data.source.remote
+package de.uniks.codecamp.group_a.weather.model.source.remote
 
 import retrofit2.http.GET
 import retrofit2.http.Query
