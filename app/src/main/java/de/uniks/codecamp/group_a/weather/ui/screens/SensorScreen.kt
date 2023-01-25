@@ -17,7 +17,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import de.uniks.codecamp.group_a.weather.R
 import de.uniks.codecamp.group_a.weather.sensor.EnvironmentSensor
 import de.uniks.codecamp.group_a.weather.sensor.SensorViewModel
-import kotlin.math.abs
 
 @Composable
 fun EnvironmentSensorScreen(modifier: Modifier = Modifier) {
@@ -31,7 +30,10 @@ fun EnvironmentSensorScreen(modifier: Modifier = Modifier) {
                 .padding(it),
             color = MaterialTheme.colors.background
         ) {
-            val sensorViewModel = viewModel<SensorViewModel>()
+
+
+
+            val sensorViewModel: SensorViewModel = viewModel()
             val sensorList = sensorViewModel.sensorList
             Column(
                 modifier = modifier
@@ -39,16 +41,21 @@ fun EnvironmentSensorScreen(modifier: Modifier = Modifier) {
                     .verticalScroll(rememberScrollState())
                     .padding(5.dp)
             ) {
+                //Brightness Sensor
                 SensorEntry(sensor = sensorList[0], value = sensorViewModel.brightness)
+                //Temperature Sensor
                 SensorEntry(sensor = sensorList[1], value = sensorViewModel.temperature)
+                //Relative Humidity Sensor
                 SensorEntry(sensor = sensorList[2], value = sensorViewModel.relHumidity)
 
+                //Calculated Absolute Humidity
                 if (sensorList[1].sensorExists && sensorList[2].sensorExists) {
                     val absHumidity = calcAbsoluteHumidity(sensorViewModel.temperature, sensorViewModel.relHumidity)
                     Text(text = "Absolute Humidity", fontSize = 35.sp , modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Start)
                     Text(text = "$absHumidity g/m³", fontSize = 25.sp, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.End)
                 }
 
+                //Pressure Sensor
                 SensorEntry(sensor = sensorList[3], value = sensorViewModel.pressure)
             }
         }
@@ -57,31 +64,31 @@ fun EnvironmentSensorScreen(modifier: Modifier = Modifier) {
 
 @Composable
 fun SensorEntry(sensor: EnvironmentSensor, value: Float) {
+    val caption = sensor.toString()
+
     if (!sensor.sensorExists) {
+        Text(text = caption, fontSize = 35.sp, textAlign = TextAlign.Start)
+        Text(text = "<No Sensor>", fontSize = 25.sp, textAlign = TextAlign.End, modifier = Modifier.fillMaxWidth())
         return
     }
 
-    var caption = ""
     var unit = ""
     var resId = R.drawable.sonne_leer
-    when {
-        sensor.sensorType == Sensor.TYPE_LIGHT -> {
-            caption = sensor.toString()
+
+    when (sensor.sensorType) {
+        Sensor.TYPE_LIGHT -> {
             unit = "lux"
             resId = getLightIcon(value = value)
         }
-        sensor.sensorType == Sensor.TYPE_AMBIENT_TEMPERATURE -> {
-            caption = sensor.toString()
+        Sensor.TYPE_AMBIENT_TEMPERATURE -> {
             unit = "°C"
             resId = getTemperatureIcon(value = value)
         }
-        sensor.sensorType == Sensor.TYPE_RELATIVE_HUMIDITY -> {
-            caption = sensor.toString()
+        Sensor.TYPE_RELATIVE_HUMIDITY -> {
             unit = "%"
             resId = getRelHumidityIcon(value = value)
         }
-        sensor.sensorType == Sensor.TYPE_PRESSURE -> {
-            caption = sensor.toString()
+        Sensor.TYPE_PRESSURE -> {
             unit = "hPa"
             resId = getPressureIcon(value = value)
         }

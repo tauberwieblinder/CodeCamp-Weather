@@ -12,7 +12,7 @@ class LightSensor(
     sensorType = Sensor.TYPE_LIGHT
 ) {
     override fun toString(): String {
-        return "Brightness/Illuminance"
+        return "Brightness"
     }
 }
 
