@@ -15,6 +15,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import dagger.hilt.android.AndroidEntryPoint
+import de.uniks.codecamp.group_a.weather.sensor.EnvironmentSensor
+import de.uniks.codecamp.group_a.weather.sensor.SensorViewModel
+import de.uniks.codecamp.group_a.weather.ui.screens.EnvironmentSensorScreen
 import de.uniks.codecamp.group_a.weather.ui.theme.WeatherTheme
 import de.uniks.codecamp.group_a.weather.viewmodel.WeatherViewModel
 
@@ -22,6 +25,7 @@ import de.uniks.codecamp.group_a.weather.viewmodel.WeatherViewModel
 class MainActivity : ComponentActivity() {
     private lateinit var locationPermissionRequest: ActivityResultLauncher<String>
     private val viewModel: WeatherViewModel by viewModels()
+    private val sensorViewModel: SensorViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,7 +49,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    Greeting("Android")
+                    EnvironmentSensorScreen(viewModel = sensorViewModel)
                 }
             }
         }
