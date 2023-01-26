@@ -34,7 +34,6 @@ fun EnvironmentSensorScreen(modifier: Modifier = Modifier) {
 
 
             val sensorViewModel: SensorViewModel = viewModel()
-            val sensorList = sensorViewModel.sensorList
             Column(
                 modifier = modifier
                     .fillMaxWidth()
@@ -42,21 +41,23 @@ fun EnvironmentSensorScreen(modifier: Modifier = Modifier) {
                     .padding(5.dp)
             ) {
                 //Brightness Sensor
-                SensorEntry(sensor = sensorList[0], value = sensorViewModel.brightness)
+                SensorEntry(sensor = sensorViewModel.lightSensor, value = sensorViewModel.brightness)
                 //Temperature Sensor
-                SensorEntry(sensor = sensorList[1], value = sensorViewModel.temperature)
+                SensorEntry(sensor = sensorViewModel.ambientTemperatureSensor, value = sensorViewModel.temperature)
                 //Relative Humidity Sensor
-                SensorEntry(sensor = sensorList[2], value = sensorViewModel.relHumidity)
+                SensorEntry(sensor = sensorViewModel.relativeHumiditySensor, value = sensorViewModel.relHumidity)
 
                 //Calculated Absolute Humidity
-                if (sensorList[1].sensorExists && sensorList[2].sensorExists) {
+                Text(text = "Absolute Humidity", fontSize = 35.sp , modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Start)
+                if (sensorViewModel.ambientTemperatureSensor.sensorExists && sensorViewModel.relativeHumiditySensor.sensorExists) {
                     val absHumidity = calcAbsoluteHumidity(sensorViewModel.temperature, sensorViewModel.relHumidity)
-                    Text(text = "Absolute Humidity", fontSize = 35.sp , modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Start)
                     Text(text = "$absHumidity g/m³", fontSize = 25.sp, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.End)
+                } else {
+                    Text(text = "<No Sensor>", fontSize = 25.sp, textAlign = TextAlign.End, modifier = Modifier.fillMaxWidth())
                 }
 
                 //Pressure Sensor
-                SensorEntry(sensor = sensorList[3], value = sensorViewModel.pressure)
+                SensorEntry(sensor = sensorViewModel.airPressureSensor, value = sensorViewModel.pressure)
             }
         }
     }
