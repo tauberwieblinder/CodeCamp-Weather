@@ -4,10 +4,12 @@ import de.uniks.codecamp.group_a.weather.model.source.remote.ApiService
 import de.uniks.codecamp.group_a.weather.domain.repository.Response
 import de.uniks.codecamp.group_a.weather.domain.repository.WeatherRepositoryInterface
 import de.uniks.codecamp.group_a.weather.model.WeatherData
+import de.uniks.codecamp.group_a.weather.model.source.local.WeatherDataDao
 import javax.inject.Inject
 
 class WeatherRepositoryImpl @Inject constructor(
-    private val apiService: ApiService
+    private val apiService: ApiService,
+    private val dao: WeatherDataDao
 ): WeatherRepositoryInterface {
     override suspend fun getCurrentWeather(
         latitude: Double,
