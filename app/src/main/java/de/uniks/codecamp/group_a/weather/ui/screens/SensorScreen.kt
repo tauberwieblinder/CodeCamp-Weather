@@ -19,7 +19,7 @@ import de.uniks.codecamp.group_a.weather.sensor.EnvironmentSensor
 import de.uniks.codecamp.group_a.weather.sensor.SensorViewModel
 
 @Composable
-fun EnvironmentSensorScreen(modifier: Modifier = Modifier) {
+fun EnvironmentSensorScreen(modifier: Modifier = Modifier, viewModel: SensorViewModel) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = { TopAppBar(title = { Text(text = "Environment Sensors") }) }
@@ -102,6 +102,8 @@ fun SensorEntry(sensor: EnvironmentSensor, value: Float) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(text = "$value $unit", fontSize = 25.sp)
+        Spacer(modifier = Modifier.width(8.dp))
         Image(painter = painterResource(id = resId), contentDescription = null, modifier = Modifier.size(50.dp))
+        Spacer(modifier = Modifier.width(8.dp))
     }
 }
