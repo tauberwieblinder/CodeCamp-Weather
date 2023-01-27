@@ -1,18 +1,9 @@
 package de.uniks.codecamp.group_a.weather.domain.repository
 
 import de.uniks.codecamp.group_a.weather.model.WeatherData
+import de.uniks.codecamp.group_a.weather.util.Resource
 import kotlinx.coroutines.flow.Flow
 
 interface WeatherRepositoryInterface {
-    suspend fun getCurrentWeather(latitude: Double, longitude: Double): Flow<WeatherData>
-
-    suspend fun insertWeatherData(weatherData: WeatherData)
-
-    suspend fun deleteWeatherData(weatherData: WeatherData)
-
-    suspend fun getForecast(latitude: Double, longitude: Double): Flow<List<WeatherData>>
-
-    suspend fun insertForecast(forecast: List<WeatherData>)
-
-    suspend fun deleteForecast(forecast: List<WeatherData>)
+    fun getCurrentWeather(): Flow<Resource<List<WeatherData>>>
 }
