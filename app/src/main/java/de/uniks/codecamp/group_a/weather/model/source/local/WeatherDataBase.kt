@@ -6,7 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import de.uniks.codecamp.group_a.weather.model.WeatherData
 
-@Database(entities = [WeatherData::class], version = 1)
+@Database(entities = [WeatherData::class], version = 1, exportSchema = false)
 abstract class WeatherDataBase : RoomDatabase() {
     abstract val weatherDataDao: WeatherDataDao
 
