@@ -4,7 +4,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -21,24 +24,34 @@ class SensorViewModel @Inject constructor(
     var pressure by mutableStateOf(0.0f)
 
     init {
-        lightSensor.startListening()
         lightSensor.setOnValueChange { value ->
             brightness = value
         }
 
-        ambientTemperatureSensor.startListening()
         ambientTemperatureSensor.setOnValueChange { value ->
             temperature = value
         }
 
-        relativeHumiditySensor.startListening()
         relativeHumiditySensor.setOnValueChange { value ->
             relHumidity = value
         }
 
-        airPressureSensor.startListening()
         airPressureSensor.setOnValueChange { value ->
             pressure = value
         }
+    }
+
+    fun startListening() {
+        lightSensor.startListening()
+        ambientTemperatureSensor.startListening()
+        relativeHumiditySensor.startListening()
+        airPressureSensor.startListening()
+    }
+
+    fun stopListening() {
+        lightSensor.stopListening()
+        ambientTemperatureSensor.stopListening()
+        relativeHumiditySensor.stopListening()
+        airPressureSensor.stopListening()
     }
 }

@@ -20,6 +20,7 @@ import de.uniks.codecamp.group_a.weather.sensor.SensorViewModel
 
 @Composable
 fun EnvironmentSensorScreen(modifier: Modifier = Modifier, viewModel: SensorViewModel) {
+    viewModel.startListening()
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = { TopAppBar(title = { Text(text = "Environment Sensors") }) }
@@ -30,10 +31,6 @@ fun EnvironmentSensorScreen(modifier: Modifier = Modifier, viewModel: SensorView
                 .padding(it),
             color = MaterialTheme.colors.background
         ) {
-
-
-
-            val sensorViewModel: SensorViewModel = viewModel()
             Column(
                 modifier = modifier
                     .fillMaxWidth()
@@ -41,23 +38,23 @@ fun EnvironmentSensorScreen(modifier: Modifier = Modifier, viewModel: SensorView
                     .padding(5.dp)
             ) {
                 //Brightness Sensor
-                SensorEntry(sensor = sensorViewModel.lightSensor, value = sensorViewModel.brightness)
+                SensorEntry(sensor = viewModel.lightSensor, value = viewModel.brightness)
                 //Temperature Sensor
-                SensorEntry(sensor = sensorViewModel.ambientTemperatureSensor, value = sensorViewModel.temperature)
+                SensorEntry(sensor = viewModel.ambientTemperatureSensor, value = viewModel.temperature)
                 //Relative Humidity Sensor
-                SensorEntry(sensor = sensorViewModel.relativeHumiditySensor, value = sensorViewModel.relHumidity)
+                SensorEntry(sensor = viewModel.relativeHumiditySensor, value = viewModel.relHumidity)
 
                 //Calculated Absolute Humidity
                 Text(text = "Absolute Humidity", fontSize = 35.sp , modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Start)
-                if (sensorViewModel.ambientTemperatureSensor.sensorExists && sensorViewModel.relativeHumiditySensor.sensorExists) {
-                    val absHumidity = calcAbsoluteHumidity(sensorViewModel.temperature, sensorViewModel.relHumidity)
+                if (viewModel.ambientTemperatureSensor.sensorExists && viewModel.relativeHumiditySensor.sensorExists) {
+                    val absHumidity = calcAbsoluteHumidity(viewModel.temperature, viewModel.relHumidity)
                     Text(text = "$absHumidity g/m³", fontSize = 25.sp, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.End)
                 } else {
                     Text(text = "<No Sensor>", fontSize = 25.sp, textAlign = TextAlign.End, modifier = Modifier.fillMaxWidth())
                 }
 
                 //Pressure Sensor
-                SensorEntry(sensor = sensorViewModel.airPressureSensor, value = sensorViewModel.pressure)
+                SensorEntry(sensor = viewModel.airPressureSensor, value = viewModel.pressure)
             }
         }
     }
