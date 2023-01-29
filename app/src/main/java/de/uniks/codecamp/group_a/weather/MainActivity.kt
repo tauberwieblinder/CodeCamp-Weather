@@ -1,48 +1,32 @@
 package de.uniks.codecamp.group_a.weather
 
 import android.Manifest
-import android.app.Activity
-import android.content.Intent
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.viewModels
 import androidx.annotation.DrawableRes
-import androidx.annotation.IdRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dagger.hilt.android.AndroidEntryPoint
 import de.uniks.codecamp.group_a.weather.model.WeatherData
-import de.uniks.codecamp.group_a.weather.sensor.SensorViewModel
 import de.uniks.codecamp.group_a.weather.ui.theme.WeatherTheme
 import de.uniks.codecamp.group_a.weather.viewmodel.WeatherViewModel
 import androidx.compose.material.Text
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontStyle
@@ -50,19 +34,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.AsyncImage
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import coil.size.Scale
 import coil.size.Size
 import com.google.accompanist.permissions.*
-import com.google.accompanist.swiperefresh.SwipeRefresh
-import com.google.android.gms.common.internal.service.Common
-import de.uniks.codecamp.group_a.weather.data.source.remote.ForecastDto
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import de.uniks.codecamp.group_a.weather.ui.screens.EnvironmentSensorScreen
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -72,30 +53,40 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             WeatherTheme {
-                MainScreen()
+                WeatherAppNavHost()
             }
         }
     }
 }
 
-
-@Preview(showBackground = true)
 @Composable
-fun DefaultPreview() {
-    WeatherTheme {
-        // Brauchen wir nicht, da die UI sich State Abhängig ändert
+fun WeatherAppNavHost(
+    modifier: Modifier = Modifier,
+    navController: NavHostController = rememberNavController(),
+    startDestination: String = "main"
+) {
+    NavHost(
+        modifier = modifier,
+        navController = navController,
+        startDestination = startDestination
+    ) {
+        composable("main") {
+            MainScreen(
+                onNavigateToSensorScreen = {
+                    navController.navigate("sensorScreen")
+                }
+            )
+        }
+        composable("sensorScreen") {
+            EnvironmentSensorScreen()
+        }
     }
 }
 
-fun Activity.recreateSmoothly() {
-    finish()
-    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
-    startActivity(Intent(this.intent))
-}
 
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterialApi::class)
 @Composable
-fun MainScreen(viewModel: WeatherViewModel = hiltViewModel()) {
+fun MainScreen(viewModel: WeatherViewModel = hiltViewModel(), onNavigateToSensorScreen: () -> Unit) {
     // Wir verwenden hier die Hilt Navigation Compose Library, um das ViewModel direkt in Composables zu injecten
 
     // Über die accompanist permission library rufen wir den aktuellen Permission state für Location ab,
@@ -128,7 +119,7 @@ fun MainScreen(viewModel: WeatherViewModel = hiltViewModel()) {
                     .verticalScroll(rememberScrollState())
             ) {
                 Column() {
-                    CurrentWeatherOverview(viewModel = viewModel)
+                    CurrentWeatherOverview(viewModel = viewModel, onNavigateToSensorScreen)
                     ForecastOverview(viewModel = viewModel)
                 }
                 PullRefreshIndicator(
@@ -143,8 +134,9 @@ fun MainScreen(viewModel: WeatherViewModel = hiltViewModel()) {
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun CurrentWeatherOverview(viewModel: WeatherViewModel) {
+fun CurrentWeatherOverview(viewModel: WeatherViewModel, onNavigateToSensorScreen: () -> Unit) {
 
     val state = viewModel.currentWeatherState
     val data = state.data
@@ -200,6 +192,7 @@ fun CurrentWeatherOverview(viewModel: WeatherViewModel) {
                         modifier = Modifier
                             .fillMaxWidth(),
                         elevation = 10.dp,
+                        onClick = onNavigateToSensorScreen
                     ) {
                         Row(
                             modifier = Modifier
