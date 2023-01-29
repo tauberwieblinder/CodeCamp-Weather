@@ -26,15 +26,18 @@ class WeatherRepositoryImpl @Inject constructor(
         emit(Resource.Loading(data = weatherData))
 
         try {
-            val remoteWeatherData = apiService.getCurrentWeather(location?.latitude.toString(), location?.longitude.toString())
+            val remoteCurrentWeatherData = apiService.getCurrentWeather(location?.latitude.toString(), location?.longitude.toString())
+            val remoteForecastData = apiService.getForecast(location?.latitude.toString(), location?.longitude.toString())
             dao.deleteAllWeather()
-            dao.insertWeatherData(remoteWeatherData.convertToWeatherData())
+            dao.insertWeatherData(remoteCurrentWeatherData.convertToWeatherData())
+            remoteForecastData.convertToWeatherDataList().onEach { remoteForecast ->
+                dao.insertWeatherData(remoteForecast)
+            }
         } catch (e: HttpException) {
             emit(Resource.Error(throwable = e, data = weatherData))
         } catch (e: IOException) {
             emit(Resource.Error(throwable = e, data = weatherData))
         }
-
         val newWeatherData = dao.getAllWeather()
         emit(Resource.Success(newWeatherData))
     }
