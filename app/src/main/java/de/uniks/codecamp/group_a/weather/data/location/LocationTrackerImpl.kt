@@ -28,13 +28,16 @@ class LocationTrackerImpl @Inject constructor(
             application,
             Manifest.permission.ACCESS_COARSE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
-
+        val locationPermission2 = ContextCompat.checkSelfPermission(
+            application,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
         val internetPermission = ContextCompat.checkSelfPermission(
             application,
             Manifest.permission.INTERNET
         ) == PackageManager.PERMISSION_GRANTED
 
-        if (!(gpsEnabled && locationPermission && internetPermission)) {
+        if (!(gpsEnabled && (locationPermission||locationPermission2) && internetPermission)) {
             // TODO: show alert explaining what permissions have to be given in order to use the app
             return null
         }

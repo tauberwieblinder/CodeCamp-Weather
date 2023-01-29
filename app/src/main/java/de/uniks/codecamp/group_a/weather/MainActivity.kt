@@ -10,9 +10,15 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.annotation.DrawableRes
+import androidx.annotation.IdRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
@@ -28,210 +34,470 @@ import de.uniks.codecamp.group_a.weather.sensor.SensorViewModel
 import de.uniks.codecamp.group_a.weather.ui.theme.WeatherTheme
 import de.uniks.codecamp.group_a.weather.viewmodel.WeatherViewModel
 import androidx.compose.material.Text
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
+import coil.size.Scale
+import coil.size.Size
+import com.google.accompanist.permissions.*
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.android.gms.common.internal.service.Common
 import de.uniks.codecamp.group_a.weather.data.source.remote.ForecastDto
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    private lateinit var locationPermissionRequest: ActivityResultLauncher<String>
-    private val viewModel: WeatherViewModel by viewModels()
-    private val sensorViewModel: SensorViewModel by viewModels()
-    private var data: WeatherData? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val data = getData()
         setContent {
             WeatherTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
-                ) {
-                    MainScreen(data = data)
-                }
+                MainScreen()
             }
         }
     }
-    fun getData(): WeatherData?{
-        // request permission to access the location, load the weather information
-        locationPermissionRequest = registerForActivityResult(
-            ActivityResultContracts.RequestPermission()
-        ) {
-            viewModel.loadCurrentWeather()
-        }
-        locationPermissionRequest.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
-
-        if (viewModel.currentWeatherState.data != null) {
-            data = viewModel.currentWeatherState.data
-        } else {
-            // Etwas ist beim Laden schiefgelaufen
-        }
-        return data
-    }
 }
+
+
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
     WeatherTheme {
-        var data: WeatherData? = null
-        MainScreen(data)
+        // Brauchen wir nicht, da die UI sich State Abhängig ändert
     }
 }
+
 fun Activity.recreateSmoothly() {
     finish()
     overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
     startActivity(Intent(this.intent))
 }
-@OptIn(ExperimentalComposeUiApi::class)
+
+@OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterialApi::class)
 @Composable
-fun MainScreen(data: WeatherData?) {
+fun MainScreen(viewModel: WeatherViewModel = hiltViewModel()) {
+    // Wir verwenden hier die Hilt Navigation Compose Library, um das ViewModel direkt in Composables zu injecten
 
-    val scope = rememberCoroutineScope()
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colors.background
-    ) {
-        Column {
-            Row() {
-
-                Column {
-                    Text(text = data?.location.toString())
-                    //data?.location.toString()
-                    Text(text = "Donnerstag")
-                    //data?.let { Text(text = it.time) }
-                }
-                Spacer(Modifier.weight(1f))
-
-                IconButton(
-                    modifier = Modifier.size(24.dp),
-                    onClick = {
-
-                        scope.launch {
-
-                        }
-                    }
-                ) {
-                    Icon(
-                        Icons.Filled.Refresh,
-                        "contentDescription",
-                    )
-                }
+    // Über die accompanist permission library rufen wir den aktuellen Permission state für Location ab,
+    // wenn die Location Permission gegeben ist, dann lade die Wetter Daten
+    val locationPermissionState = rememberPermissionState(
+        permission = Manifest.permission.ACCESS_COARSE_LOCATION,
+        onPermissionResult = { isGranted ->
+            if (isGranted) {
+                viewModel.loadAll()
             }
+        }
+    )
 
-            Row {
-                //Image(
-                //    painter = painterResource(R.drawable.profile_picture),
-                //    contentDescription = "Contact profile picture",
-                //)
+    val pullRefreshState = rememberPullRefreshState(
+        refreshing = viewModel.isRefreshing,
+        onRefresh = {
+            viewModel.loadAll()
+            viewModel.isRefreshing = false
+        }
+    )
 
-                if (true ){
-                    Image(
-                        painter = painterResource(id = R.drawable.sunny),//ChoseImage(weatherDes = data.description),
-                        contentDescription =" Contact sunny picture")
-                }
-                Column {
-                    Text("16", fontSize = 100.sp)
-                    //text = data?.temperature.toString()
-                    Text("  Sonnig", fontSize = 30.sp)
-                    //text = data?.description.toString()
-                }
+    if (locationPermissionState.status.isGranted) { // Check ob Permission vorhanden, dann zeige die Wetter Übersicht
+        Surface(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Box(
+                Modifier
+                    .pullRefresh(pullRefreshState)
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+            ) {
                 Column() {
-                    Row() {
-                        Text(text = "")
-                    }
-                    Row() {
-                        Text(text = "")
-                    }
+                    CurrentWeatherOverview(viewModel = viewModel)
+                    ForecastOverview(viewModel = viewModel)
+                }
+                PullRefreshIndicator(
+                    refreshing = viewModel.isRefreshing,
+                    state = pullRefreshState,
+                    Modifier.align(Alignment.TopCenter)
+                )
+            }
+        }
+    } else { // Ansonsten rufe die Permission Abfrage UI auf
+        LocationPermissionScreen(permissionState = locationPermissionState)
+    }
+}
 
-                    Row {
+@Composable
+fun CurrentWeatherOverview(viewModel: WeatherViewModel) {
 
-                        Image(
-                            painter = painterResource(id = R.drawable.sunny),
-                            contentDescription =" Contact sunny picture",Modifier.size(20.dp))
-                        Text(text = data?.wind_speed.toString())
-                    }
-                    Row {
+    val state = viewModel.currentWeatherState
+    val data = state.data
 
-                        Image(
-                            painter = painterResource(id = R.drawable.sunny),
-                            contentDescription =" Contact sunny picture",Modifier.size(20.dp))
-                        Text(text = data?.humidity.toString())
+    Column(
+        modifier = Modifier
+            .padding(20.dp)
+    ) {
 
-                    }
-                    Row {
+        // Wenn die Daten geladen werden zeige einen Ladekreis
+        if (state.isLoading) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                CircularProgressIndicator()
+            }
+        } else {
 
-                        Text(text = "H: ")
-                        Text(text = data?.temperature_max.toString())
-                    }
-                    Row {
-                        Text(text = "T: ")
-                        Text(text = data?.temperature_min.toString())
+            // Wenn Wetter Daten verfügbar sind, dann zeige den Screen
+            data?.let { weatherData ->
+
+                Row {
+                    Column {
+                        Row {
+                            Image(
+                                painter = painterResource(id = R.drawable.location_icon),
+                                contentDescription = "",
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .align(Alignment.CenterVertically)
+                            )
+                            Spacer(modifier = Modifier.width(5.dp))
+                            Text(
+                                text = weatherData.location.toString(),
+                                style = MaterialTheme.typography.caption,
+                                fontSize = 30.sp,
+                                modifier = Modifier
+                                    .weight(1f, false)
+                                    .align(Alignment.CenterVertically)
+                            )
+                        }
+
+                        Text(
+                            text = weatherData.date,
+                            style = MaterialTheme.typography.body1
+                        )
                     }
                 }
-            }
 
-            Text("Heute")
-            Divider(color = Color.Black, thickness = 1.dp)
-            LazyRow {
-                // Add a single item
-                for(i in 23 downTo 0){
-                    item {
-                        Column() {
-                            Text(text = "12:00")
-                            Image(
-                                painter = painterResource(id = R.drawable.sunny),
-                                contentDescription =" Contact sunny picture",Modifier.size(70.dp))
-                            Text(text = "16°C", fontSize = 25.sp)
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Todays Weather Card
+                Row {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        elevation = 10.dp,
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .padding(10.dp)
+                                .fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(1f)
+                                    .padding(horizontal = 5.dp)
+                            ) {
+                                // Wir verwenden hier den rememberAsyncImagePainer
+                                // von der coil-compose Library, um das Icon aus
+                                // der OpenWeather API zu laden, man könnte hier die
+                                // API Url noch als Konstante hinterlegen
+                                // Wenn das Icon nicht geladen werden kann könnte man noch einen Placeholder hinterlegen oder eine contentDescription
+                                Image(
+                                    painter = rememberAsyncImagePainter(
+                                        model = ImageRequest.Builder(LocalContext.current)
+                                            .data("https://openweathermap.org/img/w/${weatherData.icon}.png")
+                                            .crossfade(true)
+                                            .size(Size.ORIGINAL)
+                                            .scale(Scale.FILL)
+                                            .build(),
+                                    ),
+                                    contentDescription = "",
+                                    contentScale = ContentScale.FillBounds,
+                                    modifier = Modifier.size(100.dp)
+                                )
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(1f)
+                                    .padding(horizontal = 5.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column {
+                                    Text(
+                                        text = "${weatherData.temperature}°",
+                                        style = MaterialTheme.typography.caption,
+                                        fontSize = 30.sp
+                                    )
+                                    Text(
+                                        text = "${weatherData.description}",
+                                        style = MaterialTheme.typography.caption,
+                                        fontWeight = FontWeight.Medium,
+                                        fontStyle = FontStyle.Italic,
+                                        fontSize = 16.sp
+                                    )
+                                }
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(1f)
+                                    .padding(horizontal = 5.dp)
+                            ) {
+                                Column {
+                                    WeatherDetailRow(
+                                        iconResId = R.drawable.wind,
+                                        text = "${weatherData.wind_speed} m/s"
+                                    )
+                                    WeatherDetailRow(
+                                        iconResId = R.drawable.water3,
+                                        text = "${weatherData.humidity} %"
+                                    )
+                                    WeatherDetailRow(
+                                        title = "H: ",
+                                        text = "${weatherData.temperature_max}°"
+                                    )
+                                    WeatherDetailRow(
+                                        title = "T: ",
+                                        text = "${weatherData.temperature_min}°"
+                                    )
+                                }
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .weight(0.5f),
+                                contentAlignment = Alignment.CenterEnd
+                            ) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.forward),
+                                    contentDescription = "",
+                                    modifier = Modifier
+                                        .height(20.dp)
+                                        .padding(end = 5.dp)
+                                )
+                            }
                         }
                     }
                 }
+            }
+        } ?: run { // ansonsten zeige eine Errorseite
 
+            ErrorScreen(
+                error = state.error,
+                onRefresh = {
+                    viewModel.loadCurrentWeather()
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun ForecastOverview(viewModel: WeatherViewModel) {
+
+    val state = viewModel.forecastState
+    val data = state.data
+
+    Column(
+        modifier = Modifier
+            .padding(20.dp)
+    ) {
+
+        Row {
+            Column {
+                Text(
+                    text = "Heute",
+                    style = MaterialTheme.typography.caption,
+                    fontSize = 24.sp
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+                Divider(color = Color.LightGray, thickness = 2.dp)
+            }
+        }
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // Wenn die Daten geladen werden zeige einen Ladekreis
+        if (state.isLoading) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                CircularProgressIndicator()
+            }
+        } else {
+
+            data?.let {
+
+                LazyRow(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(start = 5.dp, end = 5.dp)
+                ) {
+                    items(items = data, itemContent = { item ->
+                        ForecastCard(weatherData = item)
+                    })
+                }
+
+            } ?: run {
+                ErrorScreen(
+                    error = state.error,
+                    onRefresh = {
+                        viewModel.loadCurrentWeather()
+                    }
+                )
             }
         }
     }
 }
+
 @Composable
-fun ChoseImage(weatherDes: String) : Painter {
-    if (weatherDes.equals("clear sky")) {
-        return painterResource(id = R.drawable.sunny)
+fun ForecastCard(weatherData: WeatherData) {
+
+    Card(
+        elevation = 8.dp,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(5.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = weatherData.time,
+                style = MaterialTheme.typography.body1,
+                modifier = Modifier
+                    .wrapContentSize(),
+                textAlign = TextAlign.Center
+            )
+            Image(
+                painter = rememberAsyncImagePainter(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data("https://openweathermap.org/img/w/${weatherData.icon}.png")
+                        .crossfade(true)
+                        .size(Size.ORIGINAL)
+                        .scale(Scale.FILL)
+                        .build(),
+                ),
+                contentDescription = "",
+                contentScale = ContentScale.FillBounds,
+                modifier = Modifier.size(70.dp)
+            )
+            Text(
+                text = "${weatherData.temperature}°",
+                style = MaterialTheme.typography.caption,
+                fontSize = 18.sp,
+                modifier = Modifier
+                    .wrapContentSize(),
+                textAlign = TextAlign.Center
+            )
+        }
     }
-    if (weatherDes.equals("few clouds")) {
-        return painterResource(id = R.drawable.sunny)
-    }
-    if (weatherDes.equals("scattered clouds")) {
-        return painterResource(id = R.drawable.sunny)
-    }
-    if (weatherDes.equals("broken clouds")) {
-        return painterResource(id = R.drawable.sunny)
-    }
-    if (weatherDes.equals("shower rain")) {
-        return painterResource(id = R.drawable.sunny)
-    }
-    if (weatherDes.equals("rain")) {
-        return painterResource(id = R.drawable.sunny)
-    }
-    if (weatherDes.equals("thunderstorm")) {
-        return painterResource(id = R.drawable.sunny)
-    }
-    if (weatherDes.equals("snow")) {
-        return painterResource(id = R.drawable.sunny)
-    }
-    if (weatherDes.equals("mist")) {
-        return painterResource(id = R.drawable.sunny)
-    }
-    return painterResource(id = R.drawable.sunny)
 }
-fun forecastList(): List<WeatherData>{
-    return emptyList()
+
+@Composable
+fun ErrorScreen(error: String?, onRefresh: () -> Unit) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(text = "Beim Laden der Daten ist ein Fehler aufgetreten. Lade die Seite erneut.")
+        error?.let { // Wenn wir einen error Text haben, zeigen wir diesen zusätzlich an
+            Text(text = "Fehler: ${it}")
+        }
+        OutlinedButton( // Mit Klick auf den Button wird versucht die Wetterdaten erneut abzurufen
+            onClick = onRefresh
+        ) {
+            Text("Neu laden")
+        }
+    }
+}
+
+@OptIn(ExperimentalPermissionsApi::class)
+@Composable
+fun LocationPermissionScreen(permissionState: PermissionState) {
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(15.dp),
+        elevation = 10.dp,
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(20.dp)
+        ) {
+
+            Image(
+                painter = painterResource(id = R.drawable.sunny),
+                "",
+            )
+
+            Text(
+                text = "CodeCamp Wetter App",
+                fontSize = 30.sp
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Text(
+                text = "Diese App benötigt die Berechtigung, deinen Standort abzufragen.",
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(15.dp))
+
+            Button(onClick = {
+                permissionState.launchPermissionRequest()
+            }) {
+                Text("Standort freigeben")
+            }
+        }
+    }
+}
+
+@Composable
+fun WeatherDetailRow(@DrawableRes iconResId: Int? = null, title: String? = null, text: String) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        iconResId?.let {
+            Image(
+                painter = painterResource(id = it),
+                contentDescription = "",
+                modifier = Modifier
+                    .height(12.dp)
+                    .padding(end = 5.dp)
+            )
+        }
+
+        title?.let {
+            Text(
+                text = it,
+                style = MaterialTheme.typography.body1,
+                fontSize = 14.sp
+            )
+        }
+
+        Text(
+            text = text,
+            style = MaterialTheme.typography.body1,
+            fontSize = 14.sp
+        )
+    }
 }

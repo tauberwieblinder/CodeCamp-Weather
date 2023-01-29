@@ -7,6 +7,7 @@ import de.uniks.codecamp.group_a.weather.data.source.remote.parsing.Wind
 import de.uniks.codecamp.group_a.weather.model.WeatherData
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.math.roundToInt
 
 class WeatherDto(
     @SerializedName("weather")
@@ -20,15 +21,18 @@ class WeatherDto(
     private fun getDateString(time: Long, simpleDateFormat: SimpleDateFormat) : String = simpleDateFormat.format(time * 1000L)
 
     fun convertToWeatherData(): WeatherData {
+        val weather = weatherDescription.first()
         return WeatherData(
-            time = getDateString(dt, SimpleDateFormat("dd MMMM yyyy, HH:mm:ss", Locale.getDefault())),
-            temperature = weatherInformation.temp,
+            date = getDateString(dt, SimpleDateFormat("EEEE, dd. MMMM yyyy", Locale.getDefault())),
+            time = getDateString(dt, SimpleDateFormat("HH:mm", Locale.getDefault())),
+            temperature = weatherInformation.temp.roundToInt(),
             location = name,
-            description = weatherDescription[0].description,
-            temperature_max = weatherInformation.temp_max,
-            temperature_min = weatherInformation.temp_min,
+            description = weather.description,
+            temperature_max = weatherInformation.temp_max.roundToInt(),
+            temperature_min = weatherInformation.temp_min.roundToInt(),
             humidity = weatherInformation.humidity.toInt(),
-            wind_speed = wind.speed
+            wind_speed = wind.speed,
+            icon = weather.icon
         )
     }
 }
