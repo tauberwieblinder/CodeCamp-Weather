@@ -3,7 +3,6 @@ package de.uniks.codecamp.group_a.weather
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.viewModels
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -12,7 +11,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
-import de.uniks.codecamp.group_a.weather.sensor.SensorViewModel
 import de.uniks.codecamp.group_a.weather.ui.screens.EnvironmentSensorScreen
 import de.uniks.codecamp.group_a.weather.ui.screens.WeatherScreen
 import de.uniks.codecamp.group_a.weather.ui.theme.WeatherTheme
