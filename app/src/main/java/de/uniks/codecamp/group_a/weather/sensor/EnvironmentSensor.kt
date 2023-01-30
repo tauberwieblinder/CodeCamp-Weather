@@ -17,8 +17,8 @@ abstract class EnvironmentSensor(
     val sensorExists: Boolean
         get() = context.packageManager.hasSystemFeature(sensorFeature)
 
-    private lateinit var sensorManager: SensorManager
-    private var sensor: Sensor? = null
+    private val sensorManager: SensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+    private var sensor: Sensor? = sensorManager.getDefaultSensor(sensorType)
 
     override fun onSensorChanged(event: SensorEvent?) {
         if (!sensorExists || event == null) {
@@ -33,11 +33,6 @@ abstract class EnvironmentSensor(
     fun startListening() {
         if (!sensorExists) {
             return
-        }
-
-        if (sensor == null) {
-            sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-            sensor = sensorManager.getDefaultSensor(sensorType)
         }
 
         sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL)

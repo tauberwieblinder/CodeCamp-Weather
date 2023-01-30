@@ -45,12 +45,19 @@ class MainActivity : ComponentActivity() {
                 WeatherScreen(
                     weatherViewModel = weatherViewModel,
                     onNavigateToSensorScreen = {
+                        sensorViewModel.startListening()
                         navController.navigate("sensorScreen")
                     }
                 )
             }
             composable("sensorScreen") {
-                EnvironmentSensorScreen(sensorViewModel = sensorViewModel)
+                EnvironmentSensorScreen(
+                    sensorViewModel = sensorViewModel,
+                    onNavigateToWeatherScreen = {
+                        sensorViewModel.stopListening()
+                        navController.navigate("main")
+                    }
+                )
             }
         }
     }

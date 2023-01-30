@@ -21,24 +21,34 @@ class SensorViewModel @Inject constructor(
     var pressure by mutableStateOf(0.0f)
 
     init {
-        lightSensor.startListening()
         lightSensor.setOnValueChange { value ->
             brightness = value
         }
 
-        ambientTemperatureSensor.startListening()
         ambientTemperatureSensor.setOnValueChange { value ->
             temperature = value
         }
 
-        relativeHumiditySensor.startListening()
         relativeHumiditySensor.setOnValueChange { value ->
             relHumidity = value
         }
 
-        airPressureSensor.startListening()
         airPressureSensor.setOnValueChange { value ->
             pressure = value
         }
+    }
+
+    fun startListening() {
+        lightSensor.startListening()
+        ambientTemperatureSensor.startListening()
+        relativeHumiditySensor.startListening()
+        airPressureSensor.startListening()
+    }
+
+    fun stopListening() {
+        lightSensor.stopListening()
+        ambientTemperatureSensor.stopListening()
+        relativeHumiditySensor.stopListening()
+        airPressureSensor.stopListening()
     }
 }

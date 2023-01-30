@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,10 +20,21 @@ import de.uniks.codecamp.group_a.weather.sensor.EnvironmentSensor
 import de.uniks.codecamp.group_a.weather.sensor.SensorViewModel
 
 @Composable
-fun EnvironmentSensorScreen(modifier: Modifier = Modifier, sensorViewModel: SensorViewModel) {
+fun EnvironmentSensorScreen(modifier: Modifier = Modifier, sensorViewModel: SensorViewModel, onNavigateToWeatherScreen: () -> Unit) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        topBar = { TopAppBar(title = { Text(text = "Environment Sensors") }) }
+        topBar = {
+            TopAppBar(
+                title = { Text(text = "Environment Sensors") },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateToWeatherScreen) {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowBack,
+                            contentDescription = "Back to Weather"
+                        )
+                    }
+                }
+            ) }
     ) {
         Surface(
             modifier = modifier
