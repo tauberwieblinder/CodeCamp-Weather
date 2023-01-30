@@ -20,7 +20,7 @@ import de.uniks.codecamp.group_a.weather.sensor.EnvironmentSensor
 import de.uniks.codecamp.group_a.weather.sensor.SensorViewModel
 
 @Composable
-fun EnvironmentSensorScreen(modifier: Modifier = Modifier, viewModel: SensorViewModel = hiltViewModel()) {
+fun EnvironmentSensorScreen(modifier: Modifier = Modifier) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = { TopAppBar(title = { Text(text = "Environment Sensors") }) }
