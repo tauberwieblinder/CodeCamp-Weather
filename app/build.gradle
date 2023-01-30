@@ -82,6 +82,10 @@ dependencies {
     implementation "com.squareup.retrofit2:converter-gson:2.9.0"
 
     implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.5.1"
+    implementation "com.google.accompanist:accompanist-permissions:$accompanist_permission_version"
+    implementation "androidx.hilt:hilt-navigation-compose:$hilt_navigation_compose_version"
+    implementation "io.coil-kt:coil-compose:$coil_compose_version"
+    implementation "androidx.navigation:navigation-compose:$nav_version"
 }
 
 // Allow references to generated code

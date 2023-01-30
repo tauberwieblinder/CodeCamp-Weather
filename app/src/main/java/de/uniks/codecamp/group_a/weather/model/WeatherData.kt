@@ -6,13 +6,14 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "weather")
 data class WeatherData(
     @PrimaryKey
+    val date: String,
     val time: String,
-
-    val temperature: Double,
+    val temperature: Int,
     val location: String?, // e.g. "Kassel"
     val description: String, // e.g. "Partly Cloudy"
-    val temperature_max: Double,
-    val temperature_min: Double,
+    val temperature_max: Int,
+    val temperature_min: Int,
     val humidity: Int,
-    val wind_speed: Double
+    val wind_speed: Double,
+    val icon: String
 )

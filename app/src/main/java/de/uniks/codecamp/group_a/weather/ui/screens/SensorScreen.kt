@@ -13,13 +13,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import de.uniks.codecamp.group_a.weather.R
 import de.uniks.codecamp.group_a.weather.sensor.EnvironmentSensor
 import de.uniks.codecamp.group_a.weather.sensor.SensorViewModel
 
 @Composable
-fun EnvironmentSensorScreen(modifier: Modifier = Modifier, viewModel: SensorViewModel) {
+fun EnvironmentSensorScreen(modifier: Modifier = Modifier, viewModel: SensorViewModel = hiltViewModel()) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = { TopAppBar(title = { Text(text = "Environment Sensors") }) }
