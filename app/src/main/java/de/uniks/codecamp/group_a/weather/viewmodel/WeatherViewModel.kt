@@ -1,109 +1,64 @@
 package de.uniks.codecamp.group_a.weather.viewmodel
 
-import android.app.Application
-import android.content.Context
-import android.location.Location
-import android.location.LocationManager
 import androidx.compose.runtime.*
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.accompanist.permissions.PermissionState
-import dagger.hilt.android.internal.Contexts.getApplication
 import dagger.hilt.android.lifecycle.HiltViewModel
-import de.uniks.codecamp.group_a.weather.domain.location.LocationTrackerInterface
-import de.uniks.codecamp.group_a.weather.domain.repository.Response
 import de.uniks.codecamp.group_a.weather.domain.repository.WeatherRepositoryInterface
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import de.uniks.codecamp.group_a.weather.util.Resource
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class WeatherViewModel @Inject constructor(
-    private val repository: WeatherRepositoryInterface,
-    private val locationTrackerInterface: LocationTrackerInterface
+    private val repository: WeatherRepositoryInterface
 ): ViewModel() {
+    private val _weatherDataState = mutableStateOf(WeatherDataState())
+    val weatherDataState: State<WeatherDataState> = _weatherDataState
 
-    var currentWeatherState by mutableStateOf(WeatherState())
-        private set
+    private val _eventFlow = MutableSharedFlow<UIEvent>()
+    val eventFlow = _eventFlow.asSharedFlow()
 
-    var forecastState by mutableStateOf(ForecastState())
-        private set
+    sealed class UIEvent {
+        data class ShowSnackbar(val message: String) : UIEvent()
+    }
+
 
     var isRefreshing by mutableStateOf(false)
 
-    init { // Initially load weather data
-        loadAll()
-    }
-
-    fun loadAll() {
+    init {
         loadCurrentWeather()
-        loadForecast()
     }
 
     fun loadCurrentWeather() {
         viewModelScope.launch {
-            currentWeatherState = currentWeatherState.copy(
-                isLoading = true,
-                error = null
-            )
-            locationTrackerInterface.getLocation()?.let { location ->
-                when(val result = repository.getCurrentWeather(location.latitude, location.longitude)) {
-                    is Response.Success -> {
-                        currentWeatherState = currentWeatherState.copy(
-                            data = result.data,
-                            isLoading = false,
-                            error = null
+            repository.getCurrentWeather().onEach { result ->
+                when (result) {
+                    is Resource.Success -> {
+                        _weatherDataState.value = weatherDataState.value.copy(
+                            weatherDataItems = result.data ?: emptyList(),
+                            isLoading = false
                         )
                     }
-                    is Response.Error -> {
-                        currentWeatherState = currentWeatherState.copy(
-                            data = null,
-                            isLoading = false,
-                            error = result.message
+                    is Resource.Error -> {
+                        _weatherDataState.value = weatherDataState.value.copy(
+                            weatherDataItems = result.data ?: emptyList(),
+                            isLoading = false
                         )
+                        _eventFlow.emit(UIEvent.ShowSnackbar("Couldn't retrieve fresh weather data. Check your internet connection and make sure to enable Location Access."))
                     }
-                }
-            } ?: kotlin.run {
-                currentWeatherState = currentWeatherState.copy(
-                    isLoading = false,
-                    error = "Couldn't retrieve location"
-                )
-            }
-        }
-    }
-
-    fun loadForecast() {
-        viewModelScope.launch {
-            forecastState = forecastState.copy(
-                isLoading = true,
-                error = null
-            )
-            locationTrackerInterface.getLocation()?.let { location ->
-                when(val result = repository.getForecast(location.latitude, location.longitude)) {
-                    is Response.Success -> {
-                        forecastState = forecastState.copy(
-                            data = result.data,
-                            isLoading = false,
-                            error = null
-                        )
-                    }
-                    is Response.Error -> {
-                        forecastState = forecastState.copy(
-                            data = null,
-                            isLoading = false,
-                            error = result.message
+                    is Resource.Loading -> {
+                        _weatherDataState.value = weatherDataState.value.copy(
+                            weatherDataItems = result.data ?: emptyList(),
+                            isLoading = true
                         )
                     }
                 }
-            } ?: kotlin.run {
-                forecastState = forecastState.copy(
-                    isLoading = false,
-                    error = "Couldn't retrieve location"
-                )
-            }
+            }.launchIn(this)
         }
     }
 }

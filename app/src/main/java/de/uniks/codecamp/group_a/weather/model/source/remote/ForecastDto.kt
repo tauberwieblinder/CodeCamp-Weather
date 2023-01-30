@@ -1,4 +1,4 @@
-package de.uniks.codecamp.group_a.weather.data.source.remote
+package de.uniks.codecamp.group_a.weather.model.source.remote
 
 import com.google.gson.annotations.SerializedName
 import de.uniks.codecamp.group_a.weather.model.WeatherData

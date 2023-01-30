@@ -1,9 +1,9 @@
-package de.uniks.codecamp.group_a.weather.data.source.remote
+package de.uniks.codecamp.group_a.weather.model.source.remote
 
 import com.google.gson.annotations.SerializedName
-import de.uniks.codecamp.group_a.weather.data.source.remote.parsing.WeatherDescription
-import de.uniks.codecamp.group_a.weather.data.source.remote.parsing.WeatherInformation
-import de.uniks.codecamp.group_a.weather.data.source.remote.parsing.Wind
+import de.uniks.codecamp.group_a.weather.model.source.remote.parsing.WeatherDescription
+import de.uniks.codecamp.group_a.weather.model.source.remote.parsing.WeatherInformation
+import de.uniks.codecamp.group_a.weather.model.source.remote.parsing.Wind
 import de.uniks.codecamp.group_a.weather.model.WeatherData
 import java.text.SimpleDateFormat
 import java.util.*

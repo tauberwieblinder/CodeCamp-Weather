@@ -4,7 +4,7 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import de.uniks.codecamp.group_a.weather.data.location.LocationTrackerImpl
+import de.uniks.codecamp.group_a.weather.model.location.LocationTrackerImpl
 import de.uniks.codecamp.group_a.weather.domain.location.LocationTrackerInterface
 import javax.inject.Singleton
 

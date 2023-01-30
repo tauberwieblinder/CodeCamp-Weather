@@ -1,4 +1,4 @@
-package de.uniks.codecamp.group_a.weather.data.source.remote.parsing
+package de.uniks.codecamp.group_a.weather.model.source.remote.parsing
 
 data class WeatherInformation(
     val temp: Double,
