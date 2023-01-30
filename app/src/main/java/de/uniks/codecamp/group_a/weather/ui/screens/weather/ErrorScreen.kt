@@ -1,3 +1,5 @@
+package de.uniks.codecamp.group_a.weather.ui.screens.weather
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Text

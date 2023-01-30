@@ -1,6 +1,5 @@
-package de.uniks.codecamp.group_a.weather.ui.screens
+package de.uniks.codecamp.group_a.weather.ui.screens.weather
 
-import ErrorScreen
 import android.Manifest
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
@@ -19,9 +18,6 @@ import androidx.compose.ui.unit.dp
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
-import de.uniks.codecamp.group_a.weather.ui.screens.weather.CurrentWeatherOverview
-import de.uniks.codecamp.group_a.weather.ui.screens.weather.ForecastOverview
-import de.uniks.codecamp.group_a.weather.ui.screens.weather.LocationPermissionScreen
 import de.uniks.codecamp.group_a.weather.viewmodel.WeatherViewModel
 import kotlinx.coroutines.flow.collectLatest
 
@@ -97,7 +93,6 @@ fun WeatherScreen(
             }
         } else {
             ErrorScreen(error = null) {
-
             }
         }
     } else { // Ansonsten rufe die Permission Abfrage UI auf

@@ -1,4 +1,4 @@
-package de.uniks.codecamp.group_a.weather.ui.screens
+package de.uniks.codecamp.group_a.weather.ui.screens.sensor
 
 import de.uniks.codecamp.group_a.weather.R
 import kotlin.math.abs

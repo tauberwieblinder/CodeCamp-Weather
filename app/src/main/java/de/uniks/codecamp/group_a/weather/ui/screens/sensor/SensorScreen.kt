@@ -1,4 +1,4 @@
-package de.uniks.codecamp.group_a.weather.ui.screens
+package de.uniks.codecamp.group_a.weather.ui.screens.sensor
 
 import android.hardware.Sensor
 import androidx.compose.foundation.Image
@@ -13,14 +13,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import de.uniks.codecamp.group_a.weather.R
 import de.uniks.codecamp.group_a.weather.sensor.EnvironmentSensor
 import de.uniks.codecamp.group_a.weather.sensor.SensorViewModel
 
 @Composable
-fun EnvironmentSensorScreen(modifier: Modifier = Modifier) {
+fun EnvironmentSensorScreen(modifier: Modifier = Modifier, sensorViewModel: SensorViewModel) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = { TopAppBar(title = { Text(text = "Environment Sensors") }) }
@@ -31,10 +29,6 @@ fun EnvironmentSensorScreen(modifier: Modifier = Modifier) {
                 .padding(it),
             color = MaterialTheme.colors.background
         ) {
-
-
-
-            val sensorViewModel: SensorViewModel = viewModel()
             Column(
                 modifier = modifier
                     .fillMaxWidth()
